@@ -1,7 +1,7 @@
 // The DOM HUD: health, ammo, money, timer, round score, killfeed, hit marker,
 // plant/defuse progress, the buy menu and the overlay screens. It never touches
 // the simulation; main.js pushes numbers in and reads the play/buy callbacks out.
-import { WEAPONS, WEAPON_ORDER, GRENADE } from './weapons.js';
+import { WEAPONS, WEAPON_ORDER, GRENADE, GRENADE_MAX } from './weapons.js';
 
 const OVERLAY_COPY = {
   start: {
@@ -63,6 +63,7 @@ export function createHud() {
   grenadeButton.className = 'buy-item';
   grenadeButton.dataset.buy = 'grenade';
   grenadeButton.innerHTML = `<span class="buy-key">6</span><span class="buy-name">${GRENADE.name}</span><span class="buy-desc">Frag · blast ${GRENADE.radius}m</span><span class="buy-price">$${GRENADE.price}</span>`;
+  const grenadePrice = grenadeButton.querySelector('.buy-price');
   buyItems.appendChild(grenadeButton);
 
   function formatTimer(seconds) {
@@ -144,12 +145,23 @@ export function createHud() {
     hideProgress() {
       progress.hidden = true;
     },
-    showBuy(open, money, owned) {
+    showBuy(open, money, owned, grenades = 0) {
       buyMenu.hidden = !open;
       buyMoney.textContent = `$${money}`;
       for (const button of buyItems.querySelectorAll('.buy-item')) {
         const id = button.dataset.buy;
-        const ownedAlready = id === 'grenade' ? false : Boolean(owned[id]);
+        if (id === 'grenade') {
+          // The grenade row used to stay clickable at the 2-grenade cap (and
+          // when broke), failing only on click with a banner. Grey it out
+          // up front instead, and say MAX when the loadout is full.
+          const capped = grenades >= GRENADE_MAX;
+          const afford = money >= GRENADE.price;
+          button.classList.toggle('owned', capped);
+          button.disabled = capped || !afford;
+          grenadePrice.textContent = capped ? 'MAX' : `$${GRENADE.price}`;
+          continue;
+        }
+        const ownedAlready = Boolean(owned[id]);
         button.classList.toggle('owned', ownedAlready);
         button.disabled = ownedAlready;
       }

@@ -148,7 +148,7 @@ const rounds = createRounds((event) => {
     audio.uiClick();
   } else if (event.type === 'roundEnd') {
     buyOpen = false;
-    hud.showBuy(false, s.money, weapons.owned);
+    hud.showBuy(false, s.money, weapons.owned, weapons.state.grenades);
     hud.banner(event.winner === 'attack' ? 'Round to Vanguard' : 'Round to Ashen', event.reason, 3400);
     hud.setScore(s.scoreV, s.scoreA, s.round);
     hud.setMoney(s.money);
@@ -181,7 +181,7 @@ function onLockChange(locked) {
     hud.hideOverlay();
     if (buyOpen) {
       buyOpen = false;
-      hud.showBuy(false, rounds.state.money, weapons.owned);
+      hud.showBuy(false, rounds.state.money, weapons.owned, weapons.state.grenades);
     }
   } else if (rounds.state.phase === 'match') {
     hud.showOverlay('matchEnd', { winner: rounds.state.scoreV > rounds.state.scoreA ? 'attack' : 'defend', scoreV: rounds.state.scoreV, scoreA: rounds.state.scoreA });
@@ -214,6 +214,8 @@ function tryBuy(id) {
     if (result.ok) {
       weapons.state.grenades += 1;
       hud.setGrenades(weapons.state.grenades);
+      // Re-render the menu so the grenade row greys out at the cap.
+      hud.showBuy(true, rounds.state.money, weapons.owned, weapons.state.grenades);
     } else {
       hud.banner(result.reason, '');
       audio.denied();
@@ -308,7 +310,7 @@ function step(dt) {
   const pressed = (code) => keys.has(code) && !prevKeys.has(code);
   if (pressed('KeyB') && (rs.phase === 'buy' || buyOpen)) {
     buyOpen = !buyOpen;
-    hud.showBuy(buyOpen, rs.money, weapons.owned);
+    hud.showBuy(buyOpen, rs.money, weapons.owned, weapons.state.grenades);
     if (buyOpen) {
       if (document.pointerLockElement) document.exitPointerLock();
     } else if (started) {
@@ -485,7 +487,7 @@ function runShot(name) {
     settle(10);
     syncCamera();
     buyOpen = true;
-    hud.showBuy(true, rounds.state.money, weapons.owned);
+    hud.showBuy(true, rounds.state.money, weapons.owned, weapons.state.grenades);
   } else if (name === 'play') {
     rounds.state.phase = 'live';
     rounds.state.timer = ROUND_SECONDS;

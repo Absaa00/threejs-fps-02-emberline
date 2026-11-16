@@ -3,6 +3,8 @@
 // start, $300 a kill, $300 for the plant, $3250 for a round win, $1900 for a loss.
 // The machine owns no rendering and no input — it emits events and main.js answers
 // them with HUD, sound and bot orders.
+import { GRENADE_MAX } from './weapons.js';
+
 export const BUY_SECONDS = 12;
 export const ROUND_SECONDS = 100;
 export const FUSE_SECONDS = 40;
@@ -181,7 +183,7 @@ export function createRounds(onEvent) {
 
   function buyGrenade() {
     if (state.phase !== 'buy') return { ok: false, reason: 'Buy phase is over' };
-    if (state.grenades >= 2) return { ok: false, reason: 'Max 2 grenades' };
+    if (state.grenades >= GRENADE_MAX) return { ok: false, reason: 'Max 2 grenades' };
     if (state.money < 300) return { ok: false, reason: 'Not enough money' };
     state.money -= 300;
     state.grenades += 1;

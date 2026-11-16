@@ -45,6 +45,10 @@ export const GRENADE = {
   damage: 95, radius: 5.5, fuse: 1.6, slot: 6,
 };
 
+// One loadout carries at most two grenades — the buy menu and the round
+// machine both read this, so the cap can never drift apart.
+export const GRENADE_MAX = 2;
+
 // Damage at a distance: full inside half the range, then a straight fall to the
 // falloff floor at full range, and the floor beyond it.
 export function damageAtRange(def, distance) {
